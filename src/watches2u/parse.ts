@@ -14,37 +14,19 @@ type ParsedItem = {
   upc64url: string;
 };
 
-const html = readFileSync('./src/watches2u/page-0.html');
+const detailsCalculator = (
+  detailsContainer: HTMLElement
+): { brand: string; model: string } => {
+  const detailsText = detailsContainer.structuredText;
 
-const parsedHtml: HTMLElement = parse(html, {
-  lowerCaseTagName: false, // convert tag name to lower case (hurts performance heavily)
-  comment: false, // retrieve comments (hurts performance slightly)
-  blockTextElements: {
-    script: true, // keep text content when parsing
-    noscript: true, // keep text content when parsing
-    style: true, // keep text content when parsing
-    pre: true // keep text content when parsing
-  }
-});
+  const brand = detailsContainer.querySelector('span')?.text || '';
 
-const priceCalculator = (priceContainer: HTMLElement): number => {
-  const priceText = priceContainer?.structuredText;
+  const model = detailsText.split(brand || '')[0];
 
-  const containsVoucherDiscount: boolean = priceText.includes('off use');
-  const pricesSplit = priceText.split('£');
-
-  if (containsVoucherDiscount) {
-    const voucherText = pricesSplit.find((priceText) =>
-      priceText.includes('off use')
-    );
-    const indexOfVoucherText = voucherText
-      ? pricesSplit.indexOf(voucherText)
-      : 0;
-    const price = pricesSplit[indexOfVoucherText + 1];
-    return parseFloat(price);
-  }
-  const price = pricesSplit[1];
-  return parseFloat(price);
+  return {
+    brand,
+    model
+  };
 };
 
 const checkItems = (items: ParsedItem[]) => {
@@ -65,20 +47,44 @@ const checkItems = (items: ParsedItem[]) => {
   console.log(`Items received: ${items.length}. Found valid: ${validCount}`);
 };
 
-const detailsCalculator = (
-  detailsContainer: HTMLElement
-): { brand: string; model: string } => {
-  const detailsText = detailsContainer.structuredText;
+const priceCalculator = (
+  priceContainer: HTMLElement,
+  print: boolean
+): number => {
+  const reComma = new RegExp(',', 'g');
+  const priceText = priceContainer?.structuredText.replace(reComma, '');
 
-  const brand = detailsContainer.querySelector('span')?.text || '';
+  if (print) console.log(priceText);
 
-  const model = detailsText.split(brand || '')[0];
+  const containsVoucherDiscount: boolean = priceText.includes('off use');
+  const pricesSplit = priceText.split('£');
 
-  return {
-    brand,
-    model
-  };
+  if (containsVoucherDiscount) {
+    const voucherText = pricesSplit.find((priceText) =>
+      priceText.includes('off use')
+    );
+    const indexOfVoucherText = voucherText
+      ? pricesSplit.indexOf(voucherText)
+      : 0;
+    const price = pricesSplit[indexOfVoucherText + 1];
+    return parseFloat(price);
+  }
+  const price = pricesSplit[1];
+  return parseFloat(price);
 };
+
+const html = readFileSync('./src/watches2u/page-3-watches.html');
+
+const parsedHtml: HTMLElement = parse(html, {
+  lowerCaseTagName: false, // convert tag name to lower case (hurts performance heavily)
+  comment: false, // retrieve comments (hurts performance slightly)
+  blockTextElements: {
+    script: true, // keep text content when parsing
+    noscript: true, // keep text content when parsing
+    style: true, // keep text content when parsing
+    pre: true // keep text content when parsing
+  }
+});
 
 const items: HTMLElement[] = parsedHtml.querySelectorAll(
   'a[class=xcomponent_products_medium_link]'
@@ -97,18 +103,18 @@ for (const item of items) {
   const priceContainer = item.querySelector(
     'div[class=xcomponent_products_medium_price]'
   );
-  const price = priceContainer ? priceCalculator(priceContainer) : 0;
-
   const detailsContainer = item.querySelector(
     'span[class=xcomponent_products_medium_description]'
   );
-
   const { brand, model } = detailsContainer
     ? detailsCalculator(detailsContainer)
     : {
         brand: '',
         model: ''
       };
+  const price = priceContainer
+    ? priceCalculator(priceContainer, model === 'A22104M1 ')
+    : 0;
 
   const upc = crypto
     .createHash('md5')
@@ -138,7 +144,11 @@ for (const item of items) {
   });
 }
 
-console.log(parsedItems);
+// console.log(parsedItems);
+
+for (const parsedItem of parsedItems) {
+  if (parsedItem.model === 'A22104M1 ') console.log({ ...parsedItem });
+}
 
 checkItems(parsedItems);
 

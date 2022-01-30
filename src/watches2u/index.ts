@@ -1,9 +1,9 @@
 import fetch from 'node-fetch';
 import { writeToJson } from '../writeToJson.js';
 
-async function page(pageNum: number = 0): Promise<string> {
+async function page(pageNum: number = 0, itemType: string): Promise<string> {
   const response = await fetch(
-    `https://www.watches2u.com/all-watches.html?per_page=288&page_num=${pageNum}`,
+    `https://www.watches2u.com/all-${itemType}.html?per_page=288&page_num=${pageNum}`,
     {
       headers: {
         'User-Agent':
@@ -24,9 +24,9 @@ async function page(pageNum: number = 0): Promise<string> {
   return await response.text();
 }
 
-async function main(pageNum: number) {
-  const results: string = await page(pageNum);
-  writeToJson(results, `./src/watches2u/page-${pageNum}.html`);
+async function main(pageNum: number, itemType: string) {
+  const results: string = await page(pageNum, itemType);
+  writeToJson(results, `./src/watches2u/page-${pageNum}-${itemType}.html`);
 }
 
-main(0);
+main(3, 'watches');
