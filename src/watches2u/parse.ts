@@ -10,8 +10,6 @@ type ParsedItem = {
   brand: string;
   model: string;
   upc: string;
-  upc64: string;
-  upc64url: string;
 };
 
 const detailsCalculator = (
@@ -121,16 +119,6 @@ for (const item of items) {
     .update(title || '')
     .digest('hex');
 
-  const upc64 = crypto
-    .createHash('md5')
-    .update(title || '')
-    .digest('base64');
-
-  const upc64url = crypto
-    .createHash('md5')
-    .update(title || '')
-    .digest('base64url');
-
   parsedItems.push({
     title: title || '',
     url: url || '',
@@ -138,9 +126,7 @@ for (const item of items) {
     price,
     brand,
     model,
-    upc,
-    upc64,
-    upc64url
+    upc
   });
 }
 
