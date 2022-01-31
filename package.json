@@ -14,8 +14,9 @@
     "argos": "ts-node ./src/argos/index.ts",
     "ej": "node --loader ts-node/esm ./src/ernestjones/index.ts",
     "watches2u": "node --loader ts-node/esm ./src/watches2u/index.ts",
-    "jura": "node --loader ts-node/esm ./src/jura/index.ts",
     "watches2u:parse": "node --loader ts-node/esm ./src/watches2u/parse.ts",
+    "jura": "node --loader ts-node/esm ./src/jura/index.ts",
+    "jura:parse": "node --loader ts-node/esm ./src/jura/parse.ts",
     "build": "rimraf ./dist && tsc"
   },
   "devDependencies": {

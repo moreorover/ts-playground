@@ -16,8 +16,6 @@ async function page(pageNum: number = 0): Promise<string> {
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin'
       },
-      referrer:
-        'https://www.jurawatches.co.uk/collections/seiko-watches/SubCat:-Prospex',
       method: 'GET'
     }
   );
@@ -30,4 +28,6 @@ async function main(pageNum: number) {
   writeToJson(results, `./src/jura/page-${pageNum}.html`);
 }
 
-main(1);
+main(5);
+
+// https://www.jurawatches.co.uk/collections/seiko-watches/subcat-presage?view=ajax-brand&page=1
