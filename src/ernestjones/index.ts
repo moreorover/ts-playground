@@ -92,4 +92,12 @@ async function gen() {
   writeToJson(JSON.stringify(results), 'bodies.json');
 }
 
-gen();
+// gen();
+
+async function fet() {
+  const res = await fetchByBrand('Hamilton');
+
+  writeToJson(JSON.stringify(res, null, 2), 'ej-hamilton.json');
+}
+
+fet();

@@ -12,11 +12,14 @@
     "dev": "ts-node src/index.ts",
     "dev:2": "node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
     "argos": "ts-node ./src/argos/index.ts",
+    "hs": "node --loader ts-node/esm ./src/hsamuel/index.ts",
     "ej": "node --loader ts-node/esm ./src/ernestjones/index.ts",
     "watches2u": "node --loader ts-node/esm ./src/watches2u/index.ts",
     "watches2u:parse": "node --loader ts-node/esm ./src/watches2u/parse.ts",
     "jura": "node --loader ts-node/esm ./src/jura/index.ts",
     "jura:parse": "node --loader ts-node/esm ./src/jura/parse.ts",
+    "hillier": "node --loader ts-node/esm ./src/hillier/index.ts",
+    "hillier:parse": "node --loader ts-node/esm ./src/hillier/parse.ts",
     "build": "rimraf ./dist && tsc"
   },
   "devDependencies": {
@@ -29,6 +32,7 @@
   },
   "dependencies": {
     "node-fetch": "^3.2.0",
-    "node-html-parser": "^5.2.0"
+    "node-html-parser": "^5.2.0",
+    "puppeteer": "^13.1.3"
   }
 }
