@@ -1,8 +1,12 @@
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 import { writeToJson } from '../writeToJson.js';
+import puppeteer from 'puppeteer-extra';
+import { Browser, Page } from 'puppeteer';
+// puppeteer.use(require('puppeteer-extra-plugin-stealth')());
+// puppeteer.use(require('puppeteer-extra-plugin-anonymize-ua')());
 
-async function fetJson(page: number): Promise<string> {
-  const response = await await fetch(
+async function fetchJson(page: number): Promise<string> {
+  const response: Response = await fetch(
     `https://www.thewatchhut.co.uk/mens-watches.htm?show=96&page=${page}`,
     {
       headers: {
@@ -24,10 +28,30 @@ async function fetJson(page: number): Promise<string> {
   return await response.text();
 }
 
-async function main(pageNum: number) {
-  const res = await fetJson(pageNum);
+async function pupFetch(page: number): Promise<string> {
+  const browser: Browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
 
-  writeToJson(res, `./src/watchhut/page-${pageNum}.html`);
+  const newPage: Page = await browser.newPage();
+
+  await newPage.goto(
+    `https://www.thewatchhut.co.uk/mens-watches.htm?show=96&page=${page}`
+  );
+
+  const html: string = await newPage.content();
+
+  await browser.close();
+
+  return html;
+}
+
+async function main(pageNum: number) {
+  // const res = await fetchJson(pageNum);
+  const res = await pupFetch(pageNum);
+
+  writeToJson(res, `./src/watchhut/page-${pageNum}-pup.html`);
 }
 
 main(1);
