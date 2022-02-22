@@ -113,7 +113,7 @@ function parseModel(itemElement: HTMLElement): string | undefined {
 }
 
 function run() {
-  const html = readFileSync('./src/watchhut/page-1-pup.html');
+  const html = readFileSync('./src/watchhut/page-1-jewellery.html');
 
   const parsedHtml: HTMLElement = parse(html);
 
