@@ -1,5 +1,5 @@
 import { parse, HTMLElement } from 'node-html-parser';
-import { readFileSync } from '../writeToJson.js';
+import { readFileSync, writeToJson } from '../writeToJson.js';
 
 const parseOptions = {
   lowerCaseTagName: false, // convert tag name to lower case (hurts performance heavily)
@@ -22,16 +22,23 @@ type ParsedItem = {
   upc?: string;
 };
 
+type ParsedPage = { page: number; ads: number; items: ParsedItem[] };
+
 function parseElements(content: HTMLElement): HTMLElement[] {
   return content.querySelectorAll('a.listingproduct');
 }
 function parseTitle(itemElement: HTMLElement): string | undefined {
   const div: HTMLElement | null = itemElement.querySelector(
-    'div.collection.ellipsis'
+    'div.name.bold.ellipsis'
   );
   if (!div) return undefined;
 
-  const title: string = div.innerText.trim();
+  const div2: HTMLElement | null = itemElement.querySelector(
+    'div.collection.ellipsis'
+  );
+  if (!div2) return undefined;
+
+  const title: string = [div.innerText.trim(), div2.innerText.trim()].join(' ');
   if (!title) return undefined;
 
   //   const title: string | undefined = itemElement.getAttribute('title')?.trim();
@@ -78,6 +85,9 @@ function parseBrand(itemElement: HTMLElement): string | undefined {
     ?.trim();
   if (!brand) return undefined;
   if (brand === 'Pre-owned') return undefined;
+  if (brand.startsWith('Garmin')) return 'Garmin';
+  if (brand.startsWith('Tissot')) return 'Tissot';
+  if (brand.startsWith('Victorinox')) return 'Victorinox';
   return brand;
 }
 function parseModel(itemElement: HTMLElement): string | undefined {
@@ -98,6 +108,15 @@ function parseModel(itemElement: HTMLElement): string | undefined {
   if (!model) return undefined;
 
   model = model.replace('-EXDISPLAY', '').trim();
+  if (!model) return undefined;
+
+  model = model.replace('-EX-DISPLAY', '').trim();
+  if (!model) return undefined;
+
+  model = model.replace(' EX-DISPLAY', '').trim();
+  if (!model) return undefined;
+
+  model = model.replace('.EX-DISPLAY', '').trim();
   if (!model) return undefined;
 
   return model;
@@ -132,4 +151,69 @@ function run() {
   }
 }
 
-run();
+// run();
+
+function runs() {
+  const parsedItems: ParsedItem[] = [];
+  const pages: ParsedPage[] = [];
+
+  const brands: Set<string> = new Set<string>();
+  const models: Set<string> = new Set<string>();
+
+  for (let step = 1; step <= 81; step++) {
+    const page: ParsedPage = { ads: 0, items: [], page: step };
+
+    const html = readFileSync(
+      `./src/firstclasswatches/pages/page-${step}.html`
+    );
+
+    const parsedHtml: HTMLElement = parse(html);
+
+    const parsedElements: HTMLElement[] = parseElements(parsedHtml);
+
+    if (!parsedElements?.length) return;
+
+    page.ads = parsedElements.length;
+
+    for (const element of parsedElements) {
+      const item: ParsedItem = {
+        title: parseTitle(element),
+        upc: parseUpc(element),
+        url: parseUrl(element),
+        image: parseImage(element),
+        price: parsePrice(element),
+        brand: parseBrand(element),
+        model: parseModel(element)
+      };
+      page.items.push(item);
+
+      if (item.brand) brands.add(item.brand);
+      if (item.model) models.add(item.model);
+    }
+
+    parsedItems.push(...page.items);
+    pages.push(page);
+
+    const sortedBrands = Array.from(brands).sort((a, b) => a.localeCompare(b));
+    const sortedModels = Array.from(models).sort((a, b) => a.localeCompare(b));
+
+    writeToJson(
+      JSON.stringify(parsedItems, null, 2),
+      './src/firstclasswatches/parsedItems.json'
+    );
+    writeToJson(
+      JSON.stringify(pages, null, 2),
+      './src/firstclasswatches/pages.json'
+    );
+    writeToJson(
+      JSON.stringify(sortedBrands, null, 2),
+      './src/firstclasswatches/brands.json'
+    );
+    writeToJson(
+      JSON.stringify(sortedModels, null, 2),
+      './src/firstclasswatches/models.json'
+    );
+  }
+}
+
+runs();

@@ -27,7 +27,10 @@ export async function page(pageNum: number): Promise<string> {
 
 async function main(pageNum: number) {
   const results: string = await page(pageNum);
-  writeToJson(results, `./src/firstclasswatches/page-${pageNum}.html`);
+  writeToJson(results, `./src/firstclasswatches/pages/page-${pageNum}.html`);
 }
 
-main(1);
+for (let step = 1; step <= 81; step++) {
+  console.log('step: ', step);
+  main(step);
+}
