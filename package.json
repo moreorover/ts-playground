@@ -19,9 +19,11 @@
     "jura": "node --loader ts-node/esm ./src/jura/index.ts",
     "jura:parse": "node --loader ts-node/esm ./src/jura/parse.ts",
     "hillier": "node --loader ts-node/esm ./src/hillier/index.ts",
+    "hillier:parse": "node --loader ts-node/esm ./src/hillier/parse.ts",
+    "tic": "node --loader ts-node/esm ./src/ticwatches/index.ts",
+    "tic:parse": "node --loader ts-node/esm ./src/ticwatches/parse.ts",
     "watchhut": "node --loader ts-node/esm ./src/watchhut/index.ts",
     "watchhut:parse": "node --loader ts-node/esm ./src/watchhut/parse.ts",
-    "hillier:parse": "node --loader ts-node/esm ./src/hillier/parse.ts",
     "build": "rimraf ./dist && tsc"
   },
   "devDependencies": {
