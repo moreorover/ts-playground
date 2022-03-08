@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
+import { writeToJson } from '../writeToJson.js';
 
 type Uroci = {
   uroci: number;
@@ -190,4 +191,17 @@ function findPrefixForPage(arr: Uroci[], page: number): string[] | null {
   return null;
 }
 
-main();
+function generateHtml() {
+  const files = fs.readdirSync('./src/domashno/matematika arhimed 8/');
+  files.sort();
+
+  let result = '<html>\n';
+  for (const file of files) {
+    const line = `<img src="${file}" alt="" srcset="">\n`;
+    result = result.concat(line);
+  }
+  result = result.concat('</html>');
+  writeToJson(result, './src/domashno/imgs-arh-2.html');
+}
+
+generateHtml();
