@@ -92,9 +92,8 @@ async function parseData() {
       });
 
       years.push(year);
-
-      results.push({ topic: t.lesson, years });
     });
+    results.push({ topic: t.lesson, years });
   }
 
   writeToJson(JSON.stringify(results, null, 2), basePath + 'books2.json');
