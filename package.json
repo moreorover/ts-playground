@@ -13,6 +13,7 @@
     "dev:2": "node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
     "argos": "ts-node ./src/argos/index.ts",
     "domashno": "node --loader ts-node/esm ./src/domashno/index.ts",
+    "domashno:maths": "node --loader ts-node/esm ./src/domashno/maths/index.ts",
     "hs": "node --loader ts-node/esm ./src/hsamuel/index.ts",
     "ej": "node --loader ts-node/esm ./src/ernestjones/index.ts",
     "watches2u": "node --loader ts-node/esm ./src/watches2u/index.ts",
