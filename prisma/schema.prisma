@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Topic {
+    id Int      @id @default(autoincrement())
+    title String 
+    years Year[]
+}
+
+model Year {
+    id Int      @id @default(autoincrement())
+    title Int
+
+    books Book[]
+
+    topic   Topic @relation(fields: [topicId], references: [id])
+    topicId Int
+}
+
+model Book {
+    id Int      @id @default(autoincrement())
+    isbn String 
+    url String 
+    localImg String?
+    remoteImgUrl String?
+    fireImgUrl String?
+    title String
+
+    lessons Lesson[]
+
+    year   Year @relation(fields: [yearId], references: [id])
+    yearId Int
+}
+
+model Lesson {
+    id Int      @id @default(autoincrement())
+
+    title String
+    tasksCount Int
+    taskIds Int[]
+    gid String
+    tasks Task[]
+
+    book   Book @relation(fields: [bookId], references: [id])
+    bookId Int
+
+}
+
+model Task {
+    id Int      @id @default(autoincrement())
+
+    sequence Int
+    localImg String?
+    remoteImgUrl String?
+    fireImgUrl String?
+
+    url String
+
+    lesson   Lesson @relation(fields: [lessonId], references: [id])
+    lessonId Int
+}
+
