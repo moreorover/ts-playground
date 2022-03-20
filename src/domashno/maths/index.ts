@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { writeToJson } from '../../writeToJson.js';
 import { parse, HTMLElement } from 'node-html-parser';
+import { Topic, Year } from '../types.js';
 
 const basePath = './src/domashno/';
 
@@ -31,22 +32,6 @@ async function main() {
   writeToJson(html, `./src/domashno/maths/index.html`);
 }
 
-type Book = {
-  url: string;
-  img: string;
-  title: string;
-};
-
-type Year = {
-  title: number | string;
-  books: Book[];
-};
-
-type Result = {
-  topic: string;
-  years: Year[];
-};
-
 async function parseData() {
   const topics = [
     { lesson: 'maths', url: 'matematika' },
@@ -54,7 +39,7 @@ async function parseData() {
     { lesson: 'chemistry', url: 'himiq' }
   ];
 
-  const results: Result[] = [];
+  const results: Topic[] = [];
 
   for (const t of topics) {
     const html = await fetchHtml(t.url);
@@ -88,7 +73,12 @@ async function parseData() {
 
         bookUrl &&
           bookImg &&
-          year.books.push({ url: bookUrl, img: bookImg, title: bookTitle });
+          year.books.push({
+            url: bookUrl,
+            img: bookImg,
+            title: bookTitle,
+            lessons: []
+          });
       });
 
       years.push(year);
