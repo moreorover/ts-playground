@@ -1,5 +1,5 @@
 export type Book = {
-  id?: string;
+  id: string;
   url: string;
   img: string;
   title: string;
@@ -21,7 +21,7 @@ export type Task = {
 };
 
 export type Year = {
-  title: number | string;
+  title: number;
   books: Book[];
 };
 
