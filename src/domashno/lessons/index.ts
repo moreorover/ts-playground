@@ -4,6 +4,11 @@ import { parse } from 'node-html-parser';
 import { topics } from './topics.js';
 import fs from 'fs';
 
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
+
+const prisma = new PrismaClient();
+
 const basePath = './src/domashno/lessons/';
 
 async function fetchHtml(lesson: string) {
@@ -185,6 +190,7 @@ async function downloadTasks() {
               console.log(
                 `Finished task number ${currentTask} of ${tasksCount}`
               );
+            } else {
             }
           }
         }
@@ -194,7 +200,7 @@ async function downloadTasks() {
   writeToJson(JSON.stringify(topics, null, 2), basePath + 'books8.json');
 }
 
-downloadTasks();
+// downloadTasks();
 
 async function parseBookIds() {
   for (const t of topics) {
@@ -208,3 +214,203 @@ async function parseBookIds() {
   }
   writeToJson(JSON.stringify(topics, null, 2), basePath + 'books7.json');
 }
+
+async function seed() {
+  for (const topic of topics) {
+    const st = await prisma.topic.create({
+      data: { title: topic.topic }
+    });
+    for (const y of topic.years) {
+      const sy = await prisma.year.create({
+        data: { title: y.title, topicId: st.id }
+      });
+      for (const b of y.books) {
+        const sb = await prisma.book.create({
+          data: {
+            isbn: b.id,
+            title: b.title,
+            url: b.url,
+            remoteImgUrl: b.img,
+            yearId: sy.id
+          }
+        });
+
+        for (const l of b.lessons) {
+          const sl = await prisma.lesson.create({
+            data: {
+              tasksCount: l.tasksCount,
+              title: l.title,
+              bookId: sb.id,
+              taskIds: l.taskIds,
+              gid: l.id
+            }
+          });
+
+          for (const t of l.taskIds) {
+            const st = await prisma.task.create({
+              data: {
+                sequence: t,
+                url: `https://domashno.bg/zadacha?p=${topic.topic}&k=${y.title}&i=${b.id}&u=${l.id}&z=${t}`,
+                lessonId: sl.id
+              }
+            });
+          }
+        }
+      }
+    }
+  }
+}
+
+// seed();
+
+async function mapImages() {
+  const files = fs.readdirSync('./src/domashno/lessons/images/');
+
+  // files.forEach((f) => console.log(f));
+
+  for (const file of files) {
+    const fileTrimmed = file.replace('.gif', '');
+
+    const splits = fileTrimmed.split('-');
+
+    const l = splits.length;
+
+    console.log(file);
+
+    const topic = splits[0];
+    const year = parseInt(splits[1]);
+    const bookIsbn = `${splits[2]}-${splits[3]}`;
+    const lesson = splits[4];
+    const task = parseInt(splits[5]);
+
+    console.log({ topic, year, bookIsbn, lesson, task });
+
+    const dbTopic = await prisma.topic.findFirst({
+      where: { title: topic },
+      include: {
+        years: {
+          where: { title: year },
+          include: {
+            books: {
+              where: { isbn: bookIsbn },
+              include: {
+                lessons: {
+                  where: { gid: lesson },
+                  include: { tasks: { where: { sequence: task } } }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const dbTask = dbTopic?.years[0].books[0].lessons[0].tasks[0];
+
+    if (dbTask) {
+      const newImageName = `${topic}+${year}+${bookIsbn}+${lesson}+${task}.gif`;
+
+      fs.rename(
+        `${basePath}/images/${file}`,
+        `${basePath}/images/${newImageName}`,
+        (err) => {
+          if (err) console.log('Error: ', err);
+        }
+      );
+
+      await prisma.task.update({
+        where: { id: dbTask.id },
+        data: {
+          localImg: newImageName
+        }
+      });
+    }
+  }
+}
+
+// mapImages();
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function downloadTaskImages() {
+  let responseCode = -1;
+
+  const taskWithImageNull = await prisma.task.findFirst({
+    where: { localImg: null },
+    include: {
+      lesson: {
+        include: { book: { include: { year: { include: { topic: true } } } } }
+      }
+    }
+  });
+
+  console.log(
+    `Downloading for: ${taskWithImageNull?.id} - ${taskWithImageNull?.url}`
+  );
+
+  if (taskWithImageNull?.url) {
+    const response = await fetchImage(taskWithImageNull?.url);
+
+    console.log('Response status: ', response.status);
+
+    if (response.status == 200) {
+      responseCode = 200;
+      fs.mkdirSync(
+        `${basePath}/${taskWithImageNull.lesson.book.year.topic.title}/${taskWithImageNull.lesson.book.year.title}/${taskWithImageNull.lesson.book.title}/${taskWithImageNull.lesson.gid}`,
+        {
+          recursive: true
+        }
+      );
+
+      response.body?.pipe(
+        fs.createWriteStream(
+          `${basePath}/${taskWithImageNull.lesson.book.year.topic.title}/${taskWithImageNull.lesson.book.year.title}/${taskWithImageNull.lesson.book.title}/${taskWithImageNull.lesson.gid}/${taskWithImageNull.sequence}.gif`
+        )
+      );
+
+      response.body?.pipe(
+        fs.createWriteStream(
+          `${basePath}/images/${taskWithImageNull.lesson.book.year.topic.title}+${taskWithImageNull.lesson.book.year.title}+${taskWithImageNull.lesson.book.isbn}+${taskWithImageNull.lesson.gid}+${taskWithImageNull.sequence}.gif`
+        )
+      );
+
+      await prisma.task.update({
+        where: { id: taskWithImageNull.id },
+        data: {
+          localImg: `${taskWithImageNull.lesson.book.year.topic.title}+${taskWithImageNull.lesson.book.year.title}+${taskWithImageNull.lesson.book.isbn}+${taskWithImageNull.lesson.gid}+${taskWithImageNull.sequence}.gif`
+        }
+      });
+    }
+  }
+
+  return responseCode;
+}
+
+async function runLoop() {
+  let runLoop = true;
+
+  while (runLoop) {
+    let code200 = 0;
+    let code404 = 0;
+
+    const waitFor = Math.random() * (10 - 3) + 3;
+
+    console.log(`Waiting for: ${waitFor} seconds.`);
+
+    await delay(waitFor * 1000);
+    const code = await downloadTaskImages();
+
+    console.log({ code });
+
+    if (code == 200) code200++;
+    if (code != 200) code404++;
+
+    if (code404 > 0) {
+      console.log(`Count of 200 response codes: ${code200}`);
+
+      runLoop = false;
+    }
+  }
+}
+
+runLoop();
