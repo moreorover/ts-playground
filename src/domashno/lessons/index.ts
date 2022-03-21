@@ -190,7 +190,6 @@ async function downloadTasks() {
               console.log(
                 `Finished task number ${currentTask} of ${tasksCount}`
               );
-            } else {
             }
           }
         }
