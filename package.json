@@ -15,6 +15,7 @@
     "domashno": "node --loader ts-node/esm ./src/domashno/index.ts",
     "domashno:maths": "node --loader ts-node/esm ./src/domashno/maths/index.ts",
     "domashno:lessons": "node --loader ts-node/esm ./src/domashno/lessons/index.ts",
+    "domashno:firebase": "node --loader ts-node/esm ./src/domashno/lessons/seedFirebase.ts",
     "hs": "node --loader ts-node/esm ./src/hsamuel/index.ts",
     "ej": "node --loader ts-node/esm ./src/ernestjones/index.ts",
     "watches2u": "node --loader ts-node/esm ./src/watches2u/index.ts",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@types/node": "^17.0.12",
+    "@types/uuid": "^8.3.4",
     "nodemon": "^2.0.15",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
@@ -47,6 +49,7 @@
     "prisma": "^3.11.0",
     "puppeteer": "^13.1.3",
     "puppeteer-extra-plugin-anonymize-ua": "^2.3.3",
-    "puppeteer-extra-plugin-stealth": "^2.9.0"
+    "puppeteer-extra-plugin-stealth": "^2.9.0",
+    "uuid": "^8.3.2"
   }
 }
