@@ -12,61 +12,65 @@ datasource db {
 }
 
 model Topic {
-    id Int      @id @default(autoincrement())
-    title String 
-    years Year[]
+  id         Int     @id @default(autoincrement())
+  title      String
+  fireBaseId String?
+  years      Year[]
 }
 
 model Year {
-    id Int      @id @default(autoincrement())
-    title Int
+  id         Int     @id @default(autoincrement())
+  title      Int
+  fireBaseId String?
 
-    books Book[]
+  books Book[]
 
-    topic   Topic @relation(fields: [topicId], references: [id])
-    topicId Int
+  topic   Topic @relation(fields: [topicId], references: [id])
+  topicId Int
 }
 
 model Book {
-    id Int      @id @default(autoincrement())
-    isbn String 
-    url String 
-    localImg String?
-    remoteImgUrl String?
-    fireImgUrl String?
-    title String
+  id           Int     @id @default(autoincrement())
+  isbn         String
+  url          String
+  localImg     String?
+  remoteImgUrl String?
+  fireImgUrl   String?
+  title        String
+  fireBaseId   String?
 
-    lessons Lesson[]
+  lessons Lesson[]
 
-    year   Year @relation(fields: [yearId], references: [id])
-    yearId Int
+  year   Year @relation(fields: [yearId], references: [id])
+  yearId Int
 }
 
 model Lesson {
-    id Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    title String
-    tasksCount Int
-    taskIds Int[]
-    gid String
-    tasks Task[]
+  title      String
+  tasksCount Int
+  taskIds    Int[]
+  gid        String
+  tasks      Task[]
+  fireBaseId String?
 
-    book   Book @relation(fields: [bookId], references: [id])
-    bookId Int
+  book   Book @relation(fields: [bookId], references: [id])
+  bookId Int
 
 }
 
 model Task {
-    id Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-    sequence Int
-    localImg String?
-    remoteImgUrl String?
-    fireImgUrl String?
+  sequence     Int
+  localImg     String?
+  remoteImgUrl String?
+  fireImgUrl   String?
+  fireBaseId   String?
 
-    url String
+  url String
 
-    lesson   Lesson @relation(fields: [lessonId], references: [id])
-    lessonId Int
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
+  lessonId Int
 }
-
